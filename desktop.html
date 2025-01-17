@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milch Experience - Desktop</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #backgroundVideo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #clickableVideoContainer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 450px;
+            height: auto;
+            z-index: 1000;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #clickableVideo {
+            width: 100%;
+            height: auto;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+
+        #frameOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1001;
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        #topLeftImage {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 400px;
+            height: auto;
+            opacity: 1;
+            z-index: 1000;
+        }
+
+        .audio-controls {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #seekBar {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="backgroundVideo" muted>
+        <source src="https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <img id="topLeftImage" src="https://i.postimg.cc/CM2rmXbX/milch.png" alt="Milch Logo">
+
+    <div id="clickableVideoContainer">
+        <video id="clickableVideo" muted>
+            <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <img id="frameOverlay" src="https://i.postimg.cc/9MRsCJQ0/image.png" alt="Frame Overlay">
+    </div>
+
+    <audio id="audioPlayer">
+        <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
+        Your browser does not support the audio tag.
+    </audio>
+
+    <div class="audio-controls">
+        <input id="seekBar" type="range" min="0" max="100" value="0">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('backgroundVideo');
+            const loopVideoSource = "https://link.storjshare.io/s/jv3aw27ilzf4zak5qoormoksjsza/music/milchloop.MP4?download=1";
+            const clickableVideo = document.getElementById('clickableVideo');
+            const frameOverlay = document.getElementById('frameOverlay');
+            const audio = document.getElementById('audioPlayer');
+            const seekBar = document.getElementById('seekBar');
+            let isPlaying = false;
+            let playStartTime = null;
+            let totalPlaytime = 0;
+
+            // Increment visitor count
+            const incrementVisitorCount = () => {
+                let visitorCount = localStorage.getItem('visitorCountDesktop') || 0;
+                visitorCount = parseInt(visitorCount) + 1;
+                localStorage.setItem('visitorCountDesktop', visitorCount);
+                console.log(`Desktop visitor count: ${visitorCount}`);
+            };
+
+            // Start tracking playtime
+            const startPlaytimeTracking = () => {
+                playStartTime = new Date().getTime();
+            };
+
+            // Stop tracking playtime
+            const stopPlaytimeTracking = () => {
+                if (playStartTime) {
+                    const currentTime = new Date().getTime();
+                    totalPlaytime += (currentTime - playStartTime) / 1000; // Convert ms to seconds
+                    playStartTime = null;
+                }
+                console.log(`Desktop total playtime: ${totalPlaytime.toFixed(2)} seconds`);
+            };
+
+            // Sync the seek bar with the media
+            const updateSeekBar = () => {
+                const videoTime = video.currentTime;
+                const audioTime = audio.currentTime;
+                const totalDuration = audio.duration || 1; // Avoid division by zero
+                seekBar.value = ((videoTime + audioTime) / totalDuration) * 100;
+            };
+
+            // Play/Pause functionality on a single tap anywhere
+            frameOverlay.addEventListener('click', () => {
+                if (isPlaying) {
+                    video.pause();
+                    audio.pause();
+                    clickableVideo.pause();
+                    stopPlaytimeTracking();
+                } else {
+                    video.play();
+                    audio.play();
+                    clickableVideo.play();
+                    startPlaytimeTracking();
+                }
+                isPlaying = !isPlaying;
+            });
+
+            // Transition to loop video after the clickable video ends
+            clickableVideo.addEventListener('ended', () => {
+                clickableVideo.src = loopVideoSource;
+                clickableVideo.loop = true;
+                clickableVideo.play();
+            });
+
+            // Sync the seek bar with the media
+            video.addEventListener('timeupdate', updateSeekBar);
+            audio.addEventListener('timeupdate', updateSeekBar);
+            clickableVideo.addEventListener('timeupdate', updateSeekBar);
+
+            // Track visitor on page load
+            incrementVisitorCount();
+
+            // Save playtime data when the page is unloaded
+            window.addEventListener('beforeunload', () => {
+                stopPlaytimeTracking();
+                localStorage.setItem('totalPlaytimeDesktop', totalPlaytime);
+            });
+        });
+    </script>
+</body>
+
+</html>
