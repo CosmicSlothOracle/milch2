@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milch Experience - Desktop</title>
+    <title>Milch Experience</title>
     <style>
         body,
         html {
@@ -108,6 +108,7 @@
         <input id="seekBar" type="range" min="0" max="100" value="0">
     </div>
 
+    <script src="traffic.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('backgroundVideo');
@@ -117,75 +118,51 @@
             const audio = document.getElementById('audioPlayer');
             const seekBar = document.getElementById('seekBar');
             let isPlaying = false;
-            let playStartTime = null;
-            let totalPlaytime = 0;
 
-            // Increment visitor count
-            const incrementVisitorCount = () => {
-                let visitorCount = localStorage.getItem('visitorCountDesktop') || 0;
-                visitorCount = parseInt(visitorCount) + 1;
-                localStorage.setItem('visitorCountDesktop', visitorCount);
-                console.log(`Desktop visitor count: ${visitorCount}`);
-            };
+            // Ensure overlay matches the video size
+            clickableVideo.addEventListener('loadedmetadata', () => {
+                frameOverlay.style.height = `${clickableVideo.offsetHeight}px`;
+                frameOverlay.style.width = `${clickableVideo.offsetWidth}px`;
+            });
 
-            // Start tracking playtime
-            const startPlaytimeTracking = () => {
-                playStartTime = new Date().getTime();
-            };
-
-            // Stop tracking playtime
-            const stopPlaytimeTracking = () => {
-                if (playStartTime) {
-                    const currentTime = new Date().getTime();
-                    totalPlaytime += (currentTime - playStartTime) / 1000; // Convert ms to seconds
-                    playStartTime = null;
-                }
-                console.log(`Desktop total playtime: ${totalPlaytime.toFixed(2)} seconds`);
-            };
-
-            // Sync the seek bar with the media
-            const updateSeekBar = () => {
-                const videoTime = video.currentTime;
-                const audioTime = audio.currentTime;
-                const totalDuration = audio.duration || 1; // Avoid division by zero
-                seekBar.value = ((videoTime + audioTime) / totalDuration) * 100;
-            };
-
-            // Play/Pause functionality on a single tap anywhere
-            frameOverlay.addEventListener('click', () => {
+            function togglePlayPause() {
                 if (isPlaying) {
                     video.pause();
                     audio.pause();
                     clickableVideo.pause();
-                    stopPlaytimeTracking();
+                    clickableVideo.style.opacity = "1";
                 } else {
                     video.play();
                     audio.play();
                     clickableVideo.play();
-                    startPlaytimeTracking();
+                    clickableVideo.style.opacity = "1";
                 }
                 isPlaying = !isPlaying;
+            }
+
+            frameOverlay.addEventListener('click', () => {
+                togglePlayPause();
             });
 
-            // Transition to loop video after the clickable video ends
+            video.addEventListener('ended', () => {
+                video.src = loopVideoSource;
+                video.loop = true;
+                video.play();
+            });
+
             clickableVideo.addEventListener('ended', () => {
-                clickableVideo.src = loopVideoSource;
-                clickableVideo.loop = true;
-                clickableVideo.play();
+                clickableVideo.style.opacity = "0.2";
             });
 
-            // Sync the seek bar with the media
-            video.addEventListener('timeupdate', updateSeekBar);
-            audio.addEventListener('timeupdate', updateSeekBar);
-            clickableVideo.addEventListener('timeupdate', updateSeekBar);
+            audio.addEventListener('timeupdate', () => {
+                seekBar.value = (audio.currentTime / audio.duration) * 100;
+            });
 
-            // Track visitor on page load
-            incrementVisitorCount();
-
-            // Save playtime data when the page is unloaded
-            window.addEventListener('beforeunload', () => {
-                stopPlaytimeTracking();
-                localStorage.setItem('totalPlaytimeDesktop', totalPlaytime);
+            seekBar.addEventListener('input', () => {
+                const seekToTime = (seekBar.value / 100) * audio.duration;
+                audio.currentTime = seekToTime;
+                video.currentTime = seekToTime;
+                clickableVideo.currentTime = seekToTime;
             });
         });
     </script>

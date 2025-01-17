@@ -95,23 +95,20 @@
 
 <body>
     <div id="playerContainer">
-        <!-- Video integrated into the background -->
         <video id="video" muted playsinline>
             <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
         </video>
-        <!-- Overlay for interaction -->
         <div id="frameOverlay"></div>
-        <!-- Controls with seek bar -->
         <div id="controls">
             <input id="seekBar" type="range" min="0" max="100" value="0">
         </div>
-        <!-- Audio element -->
         <audio id="audio">
             <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
             Your browser does not support the audio tag.
         </audio>
     </div>
 
+    <script src="traffic.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('video');
@@ -120,63 +117,37 @@
             const seekBar = document.getElementById('seekBar');
             const loopVideoSource = "https://link.storjshare.io/s/jv3aw27ilzf4zak5qoormoksjsza/music/milchloop.MP4?download=1";
             let isPlaying = false;
-            let playStartTime = null;
-            let totalPlaytime = 0;
 
-            // Increment visitor count
-            const incrementVisitorCount = () => {
-                let visitorCount = localStorage.getItem('visitorCount') || 0;
-                visitorCount = parseInt(visitorCount) + 1;
-                localStorage.setItem('visitorCount', visitorCount);
-                console.log(`Visitor count: ${visitorCount}`);
-            };
-
-            // Start tracking playtime
-            const startPlaytimeTracking = () => {
-                playStartTime = new Date().getTime();
-            };
-
-            // Stop tracking playtime
-            const stopPlaytimeTracking = () => {
-                if (playStartTime) {
-                    const currentTime = new Date().getTime();
-                    totalPlaytime += (currentTime - playStartTime) / 1000; // Convert ms to seconds
-                    playStartTime = null;
-                }
-                console.log(`Total playtime: ${totalPlaytime.toFixed(2)} seconds`);
-            };
-
-            // Update seek bar
             const updateSeekBar = () => {
-                const elapsedTime = video.src.includes(loopVideoSource)
-                    ? totalPlaytime + audio.currentTime
-                    : video.currentTime;
-                seekBar.value = (elapsedTime / audio.duration) * 100;
+                const elapsedTime = video.currentTime + audio.currentTime;
+                seekBar.value = (elapsedTime / 120) * 100;
             };
 
-            // Toggle play/pause
             frameOverlay.addEventListener('click', () => {
                 if (isPlaying) {
                     video.pause();
                     audio.pause();
-                    stopPlaytimeTracking();
                 } else {
                     video.play();
                     audio.play();
-                    startPlaytimeTracking();
                 }
                 isPlaying = !isPlaying;
             });
 
-            video.addEventListener('timeupdate', updateSeekBar);
-            audio.addEventListener('timeupdate', updateSeekBar);
-
-            window.addEventListener('beforeunload', () => {
-                stopPlaytimeTracking();
-                localStorage.setItem('totalPlaytime', totalPlaytime);
+            video.addEventListener('ended', () => {
+                video.src = loopVideoSource;
+                video.loop = true;
+                video.play();
             });
 
-            incrementVisitorCount();
+            seekBar.addEventListener('input', () => {
+                const seekToTime = (seekBar.value / 100) * 120;
+                video.currentTime = seekToTime;
+                audio.currentTime = seekToTime;
+            });
+
+            video.addEventListener('timeupdate', updateSeekBar);
+            audio.addEventListener('timeupdate', updateSeekBar);
         });
     </script>
 </body>
