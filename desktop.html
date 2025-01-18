@@ -163,10 +163,11 @@
             });
 
             seekBar.addEventListener('input', () => {
-                const seekToTime = (seekBar.value / 100) * audio.duration;
-                audio.currentTime = seekToTime;
-                video.currentTime = seekToTime;
-                clickableVideo.currentTime = seekToTime;
+                if (!isNaN(audio.duration)) {
+                    const seekToTime = (seekBar.value / 100) * audio.duration;
+                    audio.currentTime = seekToTime;
+                    video.currentTime = seekToTime;
+                }
             });
         });
     </script>

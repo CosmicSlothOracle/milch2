@@ -152,7 +152,7 @@
                 if (!isNaN(audio.duration)) {
                     const seekToTime = (seekBar.value / 100) * audio.duration;
                     audio.currentTime = seekToTime;
-                    syncVideoToAudio();
+                    video.currentTime = seekToTime;
                 }
             });
 
