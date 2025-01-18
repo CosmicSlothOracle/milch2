@@ -55,28 +55,27 @@
         /* Controls container */
         #controls {
             position: absolute;
-            top: 50%;
-            right: 10px;
+            bottom: 0;
+            left: 0;
+            right: 0;
             z-index: 3;
             display: flex;
             align-items: center;
-            transform: translateY(-50%);
+            justify-content: center;
             background: rgba(0, 0, 0, 0.6);
             padding: 10px;
-            border-radius: 10px;
         }
 
-        /* Vertical seek bar */
+        /* Horizontal seek bar */
         #seekBar {
-            width: 8px;
-            height: 200px;
+            width: 100%;
+            height: 8px;
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             outline: none;
             cursor: pointer;
-            writing-mode: bt-lr; /* Makes the slider vertical */
         }
 
         /* Custom styles for slider thumb */
@@ -103,7 +102,9 @@
     <div id="playerContainer">
         <!-- Video player -->
         <video id="video" muted playsinline>
-            <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
+            <source
+                src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1"
+                type="video/mp4">
             Your browser does not support the video tag.
         </video>
 
@@ -117,7 +118,8 @@
 
         <!-- Audio player -->
         <audio id="audio">
-            <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
+            <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1"
+                type="audio/flac">
             Your browser does not support the audio tag.
         </audio>
     </div>
@@ -142,9 +144,7 @@
 
             // Synchronize video to match audio
             const syncVideoToAudio = () => {
-                if (currentStage === "clickVideo" || currentStage === "introVideo") {
-                    video.currentTime = Math.min(audio.currentTime, video.duration);
-                }
+                video.currentTime = Math.min(audio.currentTime, video.duration);
             };
 
             // Handle user interaction with seek bar

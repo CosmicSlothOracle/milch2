@@ -85,7 +85,8 @@
 
 <body>
     <video id="backgroundVideo" muted>
-        <source src="https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1" type="video/mp4">
+        <source src="https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1"
+            type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
@@ -93,14 +94,17 @@
 
     <div id="clickableVideoContainer">
         <video id="clickableVideo" muted>
-            <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
+            <source
+                src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1"
+                type="video/mp4">
             Your browser does not support the video tag.
         </video>
         <img id="frameOverlay" src="https://i.postimg.cc/9MRsCJQ0/image.png" alt="Frame Overlay">
     </div>
 
     <audio id="audioPlayer">
-        <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
+        <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1"
+            type="audio/flac">
         Your browser does not support the audio tag.
     </audio>
 
@@ -121,8 +125,8 @@
 
             // Ensure overlay matches the video size
             clickableVideo.addEventListener('loadedmetadata', () => {
-                frameOverlay.style.height = `${clickableVideo.offsetHeight}px`;
-                frameOverlay.style.width = `${clickableVideo.offsetWidth}px`;
+                frameOverlay.style.height = `${ clickableVideo.offsetHeight }px`;
+                frameOverlay.style.width = `${ clickableVideo.offsetWidth }px`;
             });
 
             function togglePlayPause() {
