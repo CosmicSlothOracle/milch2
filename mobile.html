@@ -153,6 +153,16 @@
                     const seekToTime = (seekBar.value / 100) * audio.duration;
                     audio.currentTime = seekToTime;
                     video.currentTime = seekToTime;
+
+                    // Reset to click/play video and fade into loop video
+                    currentStage = "clickVideo";
+                    video.src = "https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1";
+                    video.play();
+                    setTimeout(() => {
+                        currentStage = "introVideo";
+                        video.src = introVideoSource;
+                        video.play();
+                    }, 1000);
                 }
             });
 

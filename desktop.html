@@ -167,6 +167,15 @@
                     const seekToTime = (seekBar.value / 100) * audio.duration;
                     audio.currentTime = seekToTime;
                     video.currentTime = seekToTime;
+
+                    // Reset to intro video and fade into loop video
+                    video.src = "https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1";
+                    video.play();
+                    setTimeout(() => {
+                        video.src = loopVideoSource;
+                        video.loop = true;
+                        video.play();
+                    }, video.duration * 1000);
                 }
             });
         });
