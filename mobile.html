@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milch Experience - Mobile</title>
     <style>
+        /* Reset styles */
         body,
         html {
             margin: 0;
@@ -15,6 +16,7 @@
             background-color: black;
         }
 
+        /* Container for the video player */
         #playerContainer {
             position: fixed;
             top: 0;
@@ -25,6 +27,7 @@
             overflow: hidden;
         }
 
+        /* Main video element */
         #video {
             position: absolute;
             top: 0;
@@ -36,6 +39,7 @@
             background: black;
         }
 
+        /* Overlay for play/pause interaction */
         #frameOverlay {
             position: absolute;
             top: 0;
@@ -48,31 +52,34 @@
             cursor: pointer;
         }
 
+        /* Controls container */
         #controls {
             position: absolute;
-            top: 10%;
+            top: 50%;
             right: 10px;
             z-index: 3;
             display: flex;
             align-items: center;
+            transform: translateY(-50%);
             background: rgba(0, 0, 0, 0.6);
             padding: 10px;
             border-radius: 10px;
         }
 
+        /* Vertical seek bar */
         #seekBar {
             width: 8px;
-            height: 300px;
+            height: 200px;
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             outline: none;
             cursor: pointer;
-            writing-mode: bt-lr;
-            /* Makes the slider vertical */
+            writing-mode: bt-lr; /* Makes the slider vertical */
         }
 
+        /* Custom styles for slider thumb */
         #seekBar::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 15px;
@@ -94,14 +101,21 @@
 
 <body>
     <div id="playerContainer">
+        <!-- Video player -->
         <video id="video" muted playsinline>
             <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
             Your browser does not support the video tag.
         </video>
+
+        <!-- Frame overlay for interaction -->
         <div id="frameOverlay"></div>
+
+        <!-- Controls with seek bar -->
         <div id="controls">
             <input id="seekBar" type="range" min="0" max="100" value="0">
         </div>
+
+        <!-- Audio player -->
         <audio id="audio">
             <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
             Your browser does not support the audio tag.
@@ -118,7 +132,7 @@
             let isPlaying = false;
             let currentStage = "clickVideo";
 
-            // Update seek bar position
+            // Update seek bar position based on audio progress
             const updateSeekBar = () => {
                 if (!isNaN(audio.duration)) {
                     const progress = (audio.currentTime / audio.duration) * 100;
@@ -126,14 +140,14 @@
                 }
             };
 
-            // Synchronize video time with audio playback
+            // Synchronize video to match audio
             const syncVideoToAudio = () => {
                 if (currentStage === "clickVideo" || currentStage === "introVideo") {
                     video.currentTime = Math.min(audio.currentTime, video.duration);
                 }
             };
 
-            // Handle seek bar interaction
+            // Handle user interaction with seek bar
             seekBar.addEventListener('input', () => {
                 if (!isNaN(audio.duration)) {
                     const seekToTime = (seekBar.value / 100) * audio.duration;
@@ -142,8 +156,8 @@
                 }
             });
 
-            // Toggle play/pause
-            document.getElementById('frameOverlay').addEventListener('click', () => {
+            // Toggle play/pause functionality
+            const togglePlayPause = () => {
                 if (isPlaying) {
                     video.pause();
                     audio.pause();
@@ -152,9 +166,9 @@
                     audio.play();
                 }
                 isPlaying = !isPlaying;
-            });
+            };
 
-            // Handle video playback transitions
+            // Transition through playback stages
             video.addEventListener('ended', () => {
                 if (currentStage === "clickVideo") {
                     currentStage = "introVideo";
@@ -168,11 +182,14 @@
                 }
             });
 
-            // Keep seek bar and video in sync
+            // Update seek bar and sync video while audio plays
             audio.addEventListener('timeupdate', () => {
                 updateSeekBar();
                 syncVideoToAudio();
             });
+
+            // Attach toggle play/pause functionality to overlay
+            document.getElementById('frameOverlay').addEventListener('click', togglePlayPause);
         });
     </script>
 </body>
