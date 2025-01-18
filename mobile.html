@@ -69,7 +69,8 @@
             border-radius: 4px;
             outline: none;
             cursor: pointer;
-            writing-mode: bt-lr; /* Makes the slider vertical */
+            writing-mode: bt-lr;
+            /* Makes the slider vertical */
         }
 
         #seekBar::-webkit-slider-thumb {
@@ -111,36 +112,49 @@
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('video');
             const audio = document.getElementById('audio');
-            const frameOverlay = document.getElementById('frameOverlay');
             const seekBar = document.getElementById('seekBar');
             const loopVideoSource = "https://link.storjshare.io/s/jv3aw27ilzf4zak5qoormoksjsza/music/milchloop.MP4?download=1";
             const introVideoSource = "https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1";
             let isPlaying = false;
-            let currentStage = "clickVideo"; // Tracks the current stage
+            let currentStage = "clickVideo";
 
-            // Dynamically update the seek bar based on the combined media duration
+            // Update seek bar position
             const updateSeekBar = () => {
-                const totalDuration = audio.duration; // Only audio determines the entire duration
-                const elapsedTime = audio.currentTime; // Reflect progress via audio time
-                if (!isNaN(totalDuration)) {
-                    seekBar.value = (elapsedTime / totalDuration) * 100;
+                if (!isNaN(audio.duration)) {
+                    const progress = (audio.currentTime / audio.duration) * 100;
+                    seekBar.value = progress;
                 }
             };
 
-            // Play/Pause toggle
-            frameOverlay.addEventListener('click', () => {
+            // Synchronize video time with audio playback
+            const syncVideoToAudio = () => {
+                if (currentStage === "clickVideo" || currentStage === "introVideo") {
+                    video.currentTime = Math.min(audio.currentTime, video.duration);
+                }
+            };
+
+            // Handle seek bar interaction
+            seekBar.addEventListener('input', () => {
+                if (!isNaN(audio.duration)) {
+                    const seekToTime = (seekBar.value / 100) * audio.duration;
+                    audio.currentTime = seekToTime;
+                    syncVideoToAudio();
+                }
+            });
+
+            // Toggle play/pause
+            document.getElementById('frameOverlay').addEventListener('click', () => {
                 if (isPlaying) {
                     video.pause();
                     audio.pause();
                 } else {
-                    video.currentTime = 0; // Reset the video to the first frame
                     video.play();
                     audio.play();
                 }
                 isPlaying = !isPlaying;
             });
 
-            // Handle video transitions and looping
+            // Handle video playback transitions
             video.addEventListener('ended', () => {
                 if (currentStage === "clickVideo") {
                     currentStage = "introVideo";
@@ -154,21 +168,11 @@
                 }
             });
 
-            // Seek bar adjustment for user input
-            seekBar.addEventListener('input', () => {
-                const totalDuration = audio.duration; // Total duration is derived from audio
-                const seekToTime = (seekBar.value / 100) * totalDuration;
-                audio.currentTime = seekToTime;
-                video.currentTime = Math.min(seekToTime, video.duration); // Sync video if possible
+            // Keep seek bar and video in sync
+            audio.addEventListener('timeupdate', () => {
+                updateSeekBar();
+                syncVideoToAudio();
             });
-
-            // Keep seek bar updated as audio and video play
-            video.addEventListener('timeupdate', updateSeekBar);
-            audio.addEventListener('timeupdate', updateSeekBar);
-
-            // Ensure metadata is loaded before calculations
-            video.addEventListener('loadedmetadata', updateSeekBar);
-            audio.addEventListener('loadedmetadata', updateSeekBar);
         });
     </script>
 </body>
