@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Milch Experience - Mobile</title>
     <style>
-        /* General styles */
         body,
         html {
             margin: 0;
@@ -34,6 +33,7 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
+            background: black;
         }
 
         #frameOverlay {
@@ -50,27 +50,26 @@
 
         #controls {
             position: absolute;
-            bottom: 20px;
-            left: 10px;
+            top: 10%;
             right: 10px;
             z-index: 3;
             display: flex;
             align-items: center;
-            gap: 10px;
             background: rgba(0, 0, 0, 0.6);
             padding: 10px;
             border-radius: 10px;
         }
 
         #seekBar {
-            flex: 1;
+            width: 8px;
+            height: 300px;
             -webkit-appearance: none;
             appearance: none;
-            height: 8px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             outline: none;
             cursor: pointer;
+            writing-mode: bt-lr; /* Makes the slider vertical */
         }
 
         #seekBar::-webkit-slider-thumb {
@@ -96,6 +95,7 @@
     <div id="playerContainer">
         <video id="video" muted playsinline>
             <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
+            Your browser does not support the video tag.
         </video>
         <div id="frameOverlay"></div>
         <div id="controls">
@@ -103,6 +103,7 @@
         </div>
         <audio id="audio">
             <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
+            Your browser does not support the audio tag.
         </audio>
     </div>
 
@@ -113,48 +114,61 @@
             const frameOverlay = document.getElementById('frameOverlay');
             const seekBar = document.getElementById('seekBar');
             const loopVideoSource = "https://link.storjshare.io/s/jv3aw27ilzf4zak5qoormoksjsza/music/milchloop.MP4?download=1";
+            const introVideoSource = "https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1";
             let isPlaying = false;
-            let isIntroVideoPlayed = false;
+            let currentStage = "clickVideo"; // Tracks the current stage
 
+            // Dynamically update the seek bar based on the combined media duration
             const updateSeekBar = () => {
-                const totalDuration = Math.max(video.duration || 0, audio.duration || 0);
+                const totalDuration = audio.duration; // Only audio determines the entire duration
+                const elapsedTime = audio.currentTime; // Reflect progress via audio time
                 if (!isNaN(totalDuration)) {
-                    seekBar.value = ((video.currentTime || 0) / totalDuration) * 100;
+                    seekBar.value = (elapsedTime / totalDuration) * 100;
                 }
             };
 
+            // Play/Pause toggle
             frameOverlay.addEventListener('click', () => {
                 if (isPlaying) {
                     video.pause();
                     audio.pause();
                 } else {
+                    video.currentTime = 0; // Reset the video to the first frame
                     video.play();
                     audio.play();
                 }
                 isPlaying = !isPlaying;
             });
 
+            // Handle video transitions and looping
             video.addEventListener('ended', () => {
-                if (!isIntroVideoPlayed) {
-                    isIntroVideoPlayed = true;
+                if (currentStage === "clickVideo") {
+                    currentStage = "introVideo";
+                    video.src = introVideoSource;
+                    video.play();
+                } else if (currentStage === "introVideo") {
+                    currentStage = "loopVideo";
                     video.src = loopVideoSource;
                     video.loop = true;
                     video.play();
                 }
             });
 
+            // Seek bar adjustment for user input
             seekBar.addEventListener('input', () => {
-                const totalDuration = Math.max(video.duration || 0, audio.duration || 0);
-                const seekTo = (seekBar.value / 100) * totalDuration;
-                video.currentTime = seekTo;
-                audio.currentTime = seekTo;
+                const totalDuration = audio.duration; // Total duration is derived from audio
+                const seekToTime = (seekBar.value / 100) * totalDuration;
+                audio.currentTime = seekToTime;
+                video.currentTime = Math.min(seekToTime, video.duration); // Sync video if possible
             });
 
+            // Keep seek bar updated as audio and video play
             video.addEventListener('timeupdate', updateSeekBar);
             audio.addEventListener('timeupdate', updateSeekBar);
 
-            video.addEventListener('loadedmetadata', () => updateSeekBar());
-            audio.addEventListener('loadedmetadata', () => updateSeekBar());
+            // Ensure metadata is loaded before calculations
+            video.addEventListener('loadedmetadata', updateSeekBar);
+            audio.addEventListener('loadedmetadata', updateSeekBar);
         });
     </script>
 </body>
