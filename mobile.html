@@ -34,7 +34,6 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            background: black;
         }
 
         #frameOverlay {
@@ -97,7 +96,6 @@
     <div id="playerContainer">
         <video id="video" muted playsinline>
             <source src="https://link.storjshare.io/s/jwosvpqrycu4sxgihvn65zld4xea/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         <div id="frameOverlay"></div>
         <div id="controls">
@@ -105,7 +103,6 @@
         </div>
         <audio id="audio">
             <source src="https://link.storjshare.io/s/jvvuzllnvz7yqfsylqn5xeknupga/music/f.flac?download=1" type="audio/flac">
-            Your browser does not support the audio tag.
         </audio>
     </div>
 
@@ -119,16 +116,13 @@
             let isPlaying = false;
             let isIntroVideoPlayed = false;
 
-            // Dynamically update the seek bar based on video and audio
             const updateSeekBar = () => {
-                const totalDuration = Math.max(video.duration, audio.duration); // Get the actual total duration
-                const elapsedTime = video.currentTime; // Sync with the video time
+                const totalDuration = Math.max(video.duration || 0, audio.duration || 0);
                 if (!isNaN(totalDuration)) {
-                    seekBar.value = (elapsedTime / totalDuration) * 100;
+                    seekBar.value = ((video.currentTime || 0) / totalDuration) * 100;
                 }
             };
 
-            // Play/Pause functionality for overlay click
             frameOverlay.addEventListener('click', () => {
                 if (isPlaying) {
                     video.pause();
@@ -140,31 +134,27 @@
                 isPlaying = !isPlaying;
             });
 
-            // Handle when the video ends
             video.addEventListener('ended', () => {
                 if (!isIntroVideoPlayed) {
-                    isIntroVideoPlayed = true; // Mark intro as played
-                    video.src = loopVideoSource; // Switch to loop video
+                    isIntroVideoPlayed = true;
+                    video.src = loopVideoSource;
                     video.loop = true;
                     video.play();
                 }
             });
 
-            // Seek bar adjustment
             seekBar.addEventListener('input', () => {
-                const totalDuration = Math.max(video.duration, audio.duration);
-                const seekToTime = (seekBar.value / 100) * totalDuration;
-                video.currentTime = seekToTime;
-                audio.currentTime = seekToTime;
+                const totalDuration = Math.max(video.duration || 0, audio.duration || 0);
+                const seekTo = (seekBar.value / 100) * totalDuration;
+                video.currentTime = seekTo;
+                audio.currentTime = seekTo;
             });
 
-            // Update the seek bar as the video/audio plays
             video.addEventListener('timeupdate', updateSeekBar);
             audio.addEventListener('timeupdate', updateSeekBar);
 
-            // Ensure video and audio durations are properly loaded
-            video.addEventListener('loadedmetadata', updateSeekBar);
-            audio.addEventListener('loadedmetadata', updateSeekBar);
+            video.addEventListener('loadedmetadata', () => updateSeekBar());
+            audio.addEventListener('loadedmetadata', () => updateSeekBar());
         });
     </script>
 </body>
