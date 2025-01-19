@@ -101,18 +101,23 @@
             background: white;
             cursor: pointer;
         }
+
+        #video {
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
     </style>
 </head>
 
 <body>
-    <video id="backgroundVideo" muted>
+    <video id="backgroundVideo" muted playsinline webkit-playsinline x5-playsinline>
         <source src="https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1"
             type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <div id="clickableVideoContainer">
-        <video id="clickableVideo" muted>
+        <video id="clickableVideo" muted playsinline webkit-playsinline x5-playsinline>
             <source
                 src="https://link.storjshare.io/s/juqoojseehflbnchdrg7czjaqy4q/music/video-output-55ABDD3F-533B-4378-ABFF-A76FA4631505.mp4?download=1"
                 type="video/mp4">
@@ -140,6 +145,16 @@
             const audio = document.getElementById('audioPlayer');
             const seekBar = document.getElementById('seekBar');
             let isPlaying = false;
+            let currentStage = "clickVideo";
+            let introVideoSource = "https://link.storjshare.io/s/jupqhzkurt5ywvgxeco2jjrdhyqq/music/MilchIntro.mp4?download=1";
+
+            // Prevent fullscreen
+            video.setAttribute('playsinline', '');
+            clickableVideo.setAttribute('playsinline', '');
+
+            // Disable native controls
+            video.removeAttribute('controls');
+            clickableVideo.removeAttribute('controls');
 
             // Ensure overlay matches the video size
             clickableVideo.addEventListener('loadedmetadata', () => {
@@ -149,15 +164,27 @@
 
             function togglePlayPause() {
                 if (isPlaying) {
+                    // Pause everything
                     video.pause();
                     audio.pause();
-                    clickableVideo.pause();
-                    clickableVideo.style.opacity = "1";
+                    video.style.opacity = "1"; // Ensure full opacity when paused
                 } else {
+                    // Start playing
                     video.play();
                     audio.play();
-                    clickableVideo.play();
-                    clickableVideo.style.opacity = "1";
+
+                    // If in click video stage, fade out to intro
+                    if (currentStage === "clickVideo") {
+                        video.style.opacity = "0"; // Fade out click video
+
+                        // After fade out, switch to intro video
+                        setTimeout(() => {
+                            currentStage = "introVideo";
+                            video.src = introVideoSource;
+                            video.style.opacity = "1"; // Full opacity for intro
+                            video.play();
+                        }, 1000); // Match the fade-out duration
+                    }
                 }
                 isPlaying = !isPlaying;
             }
@@ -167,9 +194,17 @@
             });
 
             video.addEventListener('ended', () => {
-                video.src = loopVideoSource;
-                video.loop = true;
-                video.play();
+                if (currentStage === "clickVideo") {
+                    currentStage = "introVideo";
+                    video.src = introVideoSource;
+                    video.style.opacity = "1";
+                    video.play();
+                } else if (currentStage === "introVideo") {
+                    currentStage = "loopVideo";
+                    video.src = loopVideoSource;
+                    video.loop = true;
+                    video.play();
+                }
             });
 
             clickableVideo.addEventListener('ended', () => {
@@ -186,6 +221,11 @@
                 video.currentTime = seekToTime;
                 clickableVideo.currentTime = seekToTime;
             });
+
+            // Prevent default touch behaviors that might interfere with playback
+            document.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+            }, { passive: false });
         });
     </script>
 </body>
